@@ -1,0 +1,91 @@
+// Frontend Code (React)
+import React, { useState } from "react";
+import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { motion } from "framer-motion";
+import { FaPhone, FaCalendarCheck, FaHeartbeat } from "react-icons/fa";
+import "tailwindcss/tailwind.css";
+
+const Home = () => (
+  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center p-10 bg-gradient-to-r from-blue-500 to-purple-600 min-h-screen flex flex-col justify-center items-center text-white">
+    <h1 className="text-5xl font-extrabold mb-4">Feel Better, Move Better</h1>
+    <p className="text-xl mb-6 max-w-2xl">Expert physiotherapy services tailored for your recovery and well-being.</p>
+    <Link to="/book">
+      <Button className="bg-white text-blue-600 font-bold py-3 px-6 rounded-full shadow-lg hover:bg-gray-200">Book an Appointment</Button>
+    </Link>
+  </motion.div>
+);
+
+const Services = () => (
+  <div className="p-10 bg-gray-100 min-h-screen grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {[{"name": "Physical Therapy", "icon": FaHeartbeat}, {"name": "Massage Therapy", "icon": FaPhone}, {"name": "Sports Recovery", "icon": FaCalendarCheck}].map((service, index) => (
+      <Card key={index} className="p-6 text-center shadow-xl rounded-lg bg-white hover:shadow-2xl transition duration-300">
+        <CardContent>
+          <service.icon className="text-blue-600 text-5xl mb-4 mx-auto" />
+          <h2 className="text-2xl font-semibold">{service.name}</h2>
+          <p className="text-gray-600">Expert treatments tailored for your needs.</p>
+        </CardContent>
+      </Card>
+    ))}
+  </div>
+);
+
+const Booking = () => {
+  const [formData, setFormData] = useState({ name: "", email: "", date: "", message: "" });
+  const [successMessage, setSuccessMessage] = useState("");
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const response = await fetch("http://localhost:5000/api/book", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData),
+    });
+    if (response.ok) {
+      setSuccessMessage("Appointment booked successfully!");
+      setFormData({ name: "", email: "", date: "", message: "" });
+    }
+  };
+
+  return (
+    <div className="p-10 text-center min-h-screen flex flex-col justify-center items-center bg-white">
+      <h1 className="text-4xl font-bold mb-4">Book an Appointment</h1>
+      <form className="w-full max-w-md bg-gray-100 p-6 rounded-lg shadow-md" onSubmit={handleSubmit}>
+        <input type="text" name="name" placeholder="Your Name" className="w-full p-2 mb-4 rounded" value={formData.name} onChange={handleChange} required />
+        <input type="email" name="email" placeholder="Your Email" className="w-full p-2 mb-4 rounded" value={formData.email} onChange={handleChange} required />
+        <input type="date" name="date" className="w-full p-2 mb-4 rounded" value={formData.date} onChange={handleChange} required />
+        <textarea name="message" placeholder="Your Message" className="w-full p-2 mb-4 rounded" value={formData.message} onChange={handleChange}></textarea>
+        <Button type="submit" className="bg-blue-500 hover:bg-blue-600 text-white py-3 px-6 rounded-full">Submit</Button>
+        {successMessage && <p className="text-green-500 mt-4">{successMessage}</p>}
+      </form>
+    </div>
+  );
+};
+
+const App = () => {
+  return (
+    <Router>
+      <div className="min-h-screen flex flex-col">
+        <nav className="p-4 bg-white shadow-md flex justify-center space-x-6 fixed top-0 w-full z-10">
+          <Link to="/" className="text-lg font-medium hover:text-blue-600">Home</Link>
+          <Link to="/services" className="text-lg font-medium hover:text-blue-600">Services</Link>
+          <Link to="/book" className="text-lg font-medium hover:text-blue-600">Book</Link>
+        </nav>
+        <div className="mt-16">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/services" element={<Services />} />
+            <Route path="/book" element={<Booking />} />
+          </Routes>
+        </div>
+      </div>
+    </Router>
+  );
+};
+
+export default App;
